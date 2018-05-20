@@ -14,9 +14,7 @@ void MessageManager::finishAndSendMessage()
 	rapidjson::Writer <rapidjson::StringBuffer> writer(strBuf);
 	m_jsonDoc.Accept(writer);
 	
-	std::shared_ptr <Message> message = std::make_shared <Message>();
-	message->m_text = strBuf.GetString();
-
+	std::string message = strBuf.GetString();
 	Dispatcher::Instance().handleMessage(message);
 }
 
@@ -30,6 +28,18 @@ void MessageManager::addRecord(const std::string & key, const int & value)
 {
 	auto & allocator = m_jsonDoc.GetAllocator();
 	m_jsonDoc.AddMember(rapidjson::Value(key.c_str(), allocator).Move(), rapidjson::Value().SetInt(value), allocator);
+}
+
+void MessageManager::addRecord(const std::string & key, const double & value)
+{
+	auto & allocator = m_jsonDoc.GetAllocator();
+	m_jsonDoc.AddMember(rapidjson::Value(key.c_str(), allocator).Move(), rapidjson::Value().SetDouble(value), allocator);
+}
+
+void MessageManager::addRecord(const std::string & key, const size_t & value)
+{
+	auto & allocator = m_jsonDoc.GetAllocator();
+	m_jsonDoc.AddMember(rapidjson::Value(key.c_str(), allocator).Move(), rapidjson::Value().SetUint(value), allocator);
 }
 
 void MessageManager::sendMessageCreate(size_t typeId, int parentId)
@@ -49,10 +59,29 @@ void MessageManager::sendMessageKill(int id)
 	finishAndSendMessage();
 }
 
-void MessageManager::parseMessage(const std::shared_ptr <Message> & message)
+void MessageManager::sendMessageMove(int id, double direction)
 {
-//	m_jsonDoc.Clear();
-	m_jsonDoc.Parse(message->m_text.c_str());
+	startMessage();
+	addRecord(ACTION, eActionMove);
+	addRecord(RECEIVERID, id);
+	addRecord(DIRECTION, direction);
+	finishAndSendMessage();
+}
+
+void MessageManager::sendMessageShot(int id)
+{
+	startMessage();
+	addRecord(ACTION, eActionShot);
+	addRecord(RECEIVERID, id);
+	finishAndSendMessage();
+}
+
+bool MessageManager::parseMessage(const std::string & message)
+{
+	m_jsonDoc.Parse(message.c_str());
+	if (m_jsonDoc.HasParseError())
+		return false;
+	return true;
 }
 
 bool MessageManager::getRecordValue(const std::string & key, int & value)
@@ -60,6 +89,17 @@ bool MessageManager::getRecordValue(const std::string & key, int & value)
 	if (m_jsonDoc.HasMember(key.c_str()) && m_jsonDoc[key.c_str()].IsInt())
 	{
 		value = m_jsonDoc[key.c_str()].GetInt();
+		return true;
+	}
+	else
+		return false;
+}
+
+bool MessageManager::getRecordValue(const std::string & key, size_t & value)
+{
+	if (m_jsonDoc.HasMember(key.c_str()) && m_jsonDoc[key.c_str()].IsUint())
+	{
+		value = m_jsonDoc[key.c_str()].GetUint();
 		return true;
 	}
 	else
@@ -75,41 +115,4 @@ bool MessageManager::getRecordValue(const std::string & key, std::string & value
 	}
 	else
 		return false;
-}
-
-std::string MessageManager::packContext()
-{
-	rapidjson::Document jsonDoc;
-	jsonDoc.SetObject();
-	auto & allocator = jsonDoc.GetAllocator();
-
-//	rapidjson::Value o(rapidjson::kObjectType);
-//	{
-		rapidjson::Value contacts(rapidjson::kArrayType);
-
-		rapidjson::Value v1(rapidjson::kObjectType);
-		v1.AddMember(rapidjson::Value("111", allocator).Move(), rapidjson::Value("121", allocator).Move(), allocator);
-		v1.AddMember(rapidjson::Value("112", allocator).Move(), rapidjson::Value("122", allocator).Move(), allocator);
-
-		contacts.PushBack(v1.Move(), allocator);
-
-		rapidjson::Value v2(rapidjson::kObjectType);
-		v2.AddMember(rapidjson::Value("211", allocator).Move(), rapidjson::Value("221", allocator).Move(), allocator);
-		v2.AddMember(rapidjson::Value("212", allocator).Move(), rapidjson::Value("222", allocator).Move(), allocator);
-
-		contacts.PushBack(v2.Move(), allocator);
-
-//		o.AddMember("contacts", contacts, allocator);
-//	}
-
-	jsonDoc.AddMember(rapidjson::Value("contacts", allocator).Move(), contacts.Move(), allocator);
-
-	rapidjson::StringBuffer strBuf;
-	rapidjson::Writer <rapidjson::StringBuffer> writer(strBuf);
-	jsonDoc.Accept(writer);
-
-	std::shared_ptr <Message> message = std::make_shared <Message>();
-	message->m_text = strBuf.GetString();
-
-	return "";
 }

@@ -2,13 +2,17 @@
 
 #include <vector>
 #include <memory>
+#include <mutex>
+#include <map>
+
+#include "Messagemanager.h"
 
 struct BaseEntity;
 struct Message;
 
 class Dispatcher
 {
-	Dispatcher() {};
+	Dispatcher();
 	Dispatcher(const Dispatcher& root) = delete;
 	Dispatcher & operator = (const Dispatcher&) = delete;
 
@@ -22,12 +26,19 @@ public:
 	bool subscribe(std::shared_ptr <BaseEntity> ptr);
 	bool unsubscribe(std::shared_ptr <BaseEntity> ptr);
 
-	void handleMessage(std::shared_ptr <Message> message);
+	void handleMessage(std::string & message);
 	void processMessages();
 
-	void createMessage();
+	void processCreate(MessageManager & manager);
+	void processKill(MessageManager & manager);
+	void processMove(MessageManager & manager);
+	void processShot(MessageManager & manager);
 
 private:
-	std::vector <std::shared_ptr <BaseEntity>> m_subscribers;
-	std::vector <std::shared_ptr <Message>> m_messages;
+	std::mutex									m_locker;
+	std::vector <std::shared_ptr <BaseEntity>>  m_subscribers;
+	std::vector <std::string>					m_messages;
+
+	typedef void (Dispatcher::*Processor)(MessageManager &);
+	std::map <int, Processor>					m_processors;
 };

@@ -5,10 +5,18 @@
 
 #define PORT_NUM 1977
 
+#define MESSAGE_GET_CONTEXT "GetContext"
+#define MESSAGE_MOVE "Move"
+#define MESSAGE_SHOT "Shot"
+
+#define STRING_SEPARATOR "  "
+#define STRING_FINISH "\r\n"
+
 class Communicator
 {
 public:
 	static void runService();
 
+	void prepareMessage(std::string & message);
 private:
 };

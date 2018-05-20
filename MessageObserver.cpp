@@ -1,11 +1,19 @@
 #include "stdafx.h"
 
 #include <algorithm>
+#include <mutex>
 
 #include "Entity.h"
 #include "MessageObserver.h"
-#include "Messagemanager.h"
 #include "Context.h"
+
+Dispatcher::Dispatcher()
+{
+	m_processors[MessageManager::eAction::eActionCreate]	= &Dispatcher::processCreate;
+	m_processors[MessageManager::eAction::eActionKill]		= &Dispatcher::processKill;
+	m_processors[MessageManager::eAction::eActionMove]		= &Dispatcher::processMove;
+	m_processors[MessageManager::eAction::eActionShot]		= &Dispatcher::processShot;
+}
 
 bool Dispatcher::subscribe(const std::shared_ptr <BaseEntity> ptr)
 {
@@ -29,8 +37,9 @@ bool Dispatcher::unsubscribe(const std::shared_ptr <BaseEntity> ptr)
 	return true;
 }
 
-void Dispatcher::handleMessage(std::shared_ptr <Message> message)
+void Dispatcher::handleMessage(std::string & message)
 {
+	std::lock_guard <std::mutex> locker(m_locker);
 	m_messages.push_back(message);
 }
 
@@ -38,50 +47,71 @@ void Dispatcher::processMessages()
 {
 	Context & context = Context::Instance();
 
+	std::lock_guard <std::mutex> locker(m_locker);
 	for (auto & message : m_messages)
 	{
 		MessageManager manager;
-		manager.parseMessage(message);
+		if (!manager.parseMessage(message))
+			continue;//throw "Bad Message!";
 		
 		int action;
 		if (!manager.getRecordValue(ACTION, action))
-			throw "Bad Message!";
-
-		if (action == MessageManager::eAction::eActionCreate)
+			continue;//throw "Bad Message!";
+		try
 		{
-			int typeId, parentId;
-			if (!manager.getRecordValue(TYPEID, typeId) || !manager.getRecordValue(PARENT, parentId))
-				throw "Bad Message!";
-
-			auto entity = context.add(typeId, context.getById(parentId));
-			Dispatcher::Instance().subscribe(entity);
+			(this->*m_processors[action])(manager);
 		}
-		else if (action == MessageManager::eAction::eActionKill)
+		catch (std::string)
 		{
-			int receiverId;
-			if (!manager.getRecordValue(RECEIVERID, receiverId))
-				throw "Bad Message!";
-
-			auto it = std::find_if(m_subscribers.begin(), m_subscribers.end(), [&receiverId](auto & entity)
-			{
-				if (entity != nullptr)
-					return entity->m_id == receiverId;
-				else
-					return false;
-			});
-
-			if (it != m_subscribers.end())
-			{
-				context.remove(*it);
-				unsubscribe(*it);
-			}
+			continue;
 		}
 	}
 
 	m_messages.clear();
 }
 
-void Dispatcher::createMessage()
+void Dispatcher::processCreate(MessageManager & manager)
 {
-	;
+	Context & context = Context::Instance();
+	size_t typeId;
+	int parentId;
+
+	if (!manager.getRecordValue(TYPEID, typeId) || !manager.getRecordValue(PARENT, parentId))
+		throw "Bad Message!";
+
+	auto entity = context.add(typeId, context.getById(parentId));
+	Dispatcher::Instance().subscribe(entity);
 }
+
+void Dispatcher::processKill(MessageManager & manager)
+{
+	Context & context = Context::Instance();
+	int receiverId;
+	if (!manager.getRecordValue(RECEIVERID, receiverId))
+		throw "Bad Message!";
+
+	auto it = std::find_if(m_subscribers.begin(), m_subscribers.end(), [&receiverId](auto & entity)
+	{
+		if (entity != nullptr)
+			return entity->m_id == receiverId;
+		else
+			return false;
+	});
+
+	if (it != m_subscribers.end())
+	{
+		context.remove(*it);
+		unsubscribe(*it);
+	}
+}
+
+void Dispatcher::processMove(MessageManager & manager)
+{
+	int r = 0;
+}
+
+void Dispatcher::processShot(MessageManager & manager)
+{
+	int r = 0;
+}
+

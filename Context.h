@@ -47,7 +47,7 @@ public:
 	void remove(const std::shared_ptr <BaseEntity> & ptr);
 
 	void setContextDump();
-	void getContextDump(std::string & dump);
+	void getContextDump(std::string & message);
 
 	void swap();
 

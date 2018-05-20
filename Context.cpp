@@ -85,10 +85,10 @@ void Context::setContextDump()
 	m_dump = strBuf.GetString();
 }
 
-void Context::getContextDump(std::string & dump)
+void Context::getContextDump(std::string & message)
 {
 	std::lock_guard <std::mutex> locker(m_locker);
-	dump = m_dump;
+	message = m_dump;
 }
 
 /*
