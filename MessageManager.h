@@ -36,6 +36,7 @@ public:
 	bool getRecordValue(const std::string & key, int & value);
 	bool getRecordValue(const std::string & key, std::string & value);
 	bool getRecordValue(const std::string & key, size_t & value);
+	bool getRecordValue(const std::string & key, double & value);
 
 	void sendMessageCreate(size_t typeId, int parentId = 0);
 	void sendMessageKill(int id);

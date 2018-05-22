@@ -59,7 +59,8 @@ void Dispatcher::processMessages()
 			continue;//throw "Bad Message!";
 		try
 		{
-			(this->*m_processors[action])(manager);
+			//(this->*m_processors[action])(manager);
+			m_processors[action](this, manager);
 		}
 		catch (std::string)
 		{

@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 #include <map>
+#include <functional>
 
 #include "Messagemanager.h"
 
@@ -35,10 +36,12 @@ public:
 	void processShot(MessageManager & manager);
 
 private:
-	std::mutex									m_locker;
-	std::vector <std::shared_ptr <BaseEntity>>  m_subscribers;
-	std::vector <std::string>					m_messages;
+	std::mutex																	m_locker;
+	std::vector <std::shared_ptr <BaseEntity>>									m_subscribers;
+	std::vector <std::string>													m_messages;
 
-	typedef void (Dispatcher::*Processor)(MessageManager &);
-	std::map <int, Processor>					m_processors;
+	//typedef void (Dispatcher::*Processor)(MessageManager &);
+	//std::map <int, Processor>													m_processors;
+	std::map <int, std::function <void(Dispatcher*, MessageManager & manager)>>	m_processors;
+
 };

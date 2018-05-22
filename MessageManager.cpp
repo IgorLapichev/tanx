@@ -39,7 +39,7 @@ void MessageManager::addRecord(const std::string & key, const double & value)
 void MessageManager::addRecord(const std::string & key, const size_t & value)
 {
 	auto & allocator = m_jsonDoc.GetAllocator();
-	m_jsonDoc.AddMember(rapidjson::Value(key.c_str(), allocator).Move(), rapidjson::Value().SetUint(value), allocator);
+	m_jsonDoc.AddMember(rapidjson::Value(key.c_str(), allocator).Move(), rapidjson::Value().SetUint64(value), allocator);
 }
 
 void MessageManager::sendMessageCreate(size_t typeId, int parentId)
@@ -97,9 +97,9 @@ bool MessageManager::getRecordValue(const std::string & key, int & value)
 
 bool MessageManager::getRecordValue(const std::string & key, size_t & value)
 {
-	if (m_jsonDoc.HasMember(key.c_str()) && m_jsonDoc[key.c_str()].IsUint())
+	if (m_jsonDoc.HasMember(key.c_str()) && m_jsonDoc[key.c_str()].IsUint64())
 	{
-		value = m_jsonDoc[key.c_str()].GetUint();
+		value = m_jsonDoc[key.c_str()].GetUint64();
 		return true;
 	}
 	else
@@ -111,6 +111,17 @@ bool MessageManager::getRecordValue(const std::string & key, std::string & value
 	if (m_jsonDoc.HasMember(key.c_str()) && m_jsonDoc[key.c_str()].IsString())
 	{
 		value = m_jsonDoc[key.c_str()].GetString();
+		return true;
+	}
+	else
+		return false;
+}
+
+bool MessageManager::getRecordValue(const std::string & key, double & value)
+{
+	if (m_jsonDoc.HasMember(key.c_str()) && m_jsonDoc[key.c_str()].IsDouble())
+	{
+		value = m_jsonDoc[key.c_str()].GetDouble();
 		return true;
 	}
 	else
