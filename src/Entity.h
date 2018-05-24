@@ -1,3 +1,12 @@
+/*
+* This file is a server part of tanx game.
+*
+* (c) Igor Lapichev <lapichev@mail.ru>
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+*/
+
 #pragma once
 
 #include "Logics.h"
@@ -34,7 +43,7 @@ protected:
 
 struct SpatialEntity : BaseEntity
 {
-	// ¬от тут походу перемудрил, надо подумать
+	// Refactoring is needed
 	std::tuple <int, int> m_position = std::make_tuple(-1, -1);
 	std::tuple <int, int> m_nextposition = std::make_tuple(-1, -1);
 
