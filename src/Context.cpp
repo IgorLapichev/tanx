@@ -18,11 +18,11 @@
 
 void Context::remove(const std::shared_ptr <BaseEntity> & ptr)
 {
-	m_currentContext.erase(
-		std::remove_if(m_currentContext.begin(), 
-		m_currentContext.end(), 
+	m_primaryContext.erase(
+		std::remove_if(m_primaryContext.begin(),
+			m_primaryContext.end(),
 		[ptr](const auto & entity) {return entity == ptr;}), 
-		m_currentContext.end()
+		m_primaryContext.end()
 	);
 
 	m_pool.removeEntity(ptr);
@@ -35,13 +35,29 @@ const std::shared_ptr <BaseEntity> Context::add(size_t typeId, const std::shared
 	{
 		ptr->setParent(pParent);
 		ptr->init();
-
 		ptr->m_id = (0 << 16) + ++m_counter;
 
-		m_currentContext.push_back(ptr);
+		m_primaryContext.push_back(ptr);
 	}
 
 	return ptr;
+}
+
+void Context::clone(const std::shared_ptr <BaseEntity> & original)
+{
+	const std::shared_ptr <BaseEntity> ptr = m_pool.createEntity(original->getTypeId());
+	if (ptr != nullptr)
+	{
+		// need to make virtual clone() in entity
+		ptr->setParent(original->m_parent);
+		
+		ptr->setPosition(original->getPosition());
+		ptr->setDirection(original->getDirection());
+
+		ptr->m_id = original->m_id;
+
+		m_secondaryContext.push_back(ptr);
+	}
 }
 
 const std::shared_ptr <BaseEntity> Context::getById(const int & id)
@@ -49,13 +65,13 @@ const std::shared_ptr <BaseEntity> Context::getById(const int & id)
 	if (id <= 0)
 		return nullptr;
 
-	auto entity = std::find_if(m_currentContext.begin(),
-		m_currentContext.end(),
+	auto entity = std::find_if(m_primaryContext.begin(),
+		m_primaryContext.end(),
 		[id](const auto & entity)
 	{
 		return entity->m_id == id;
 	});
-	if (entity == m_currentContext.end())
+	if (entity == m_primaryContext.end())
 		return nullptr;
 
 	return *entity;
@@ -63,7 +79,7 @@ const std::shared_ptr <BaseEntity> Context::getById(const int & id)
 
 void Context::swap()
 {
-	m_currentContext == *m_context ? m_currentContext = *m_context : m_currentContext = *(m_context + 1);
+	//m_currentContext == *m_context ? m_currentContext = *m_context : m_currentContext = *(m_context + 1);
 }
 
 void Context::setContextDump()
@@ -73,7 +89,7 @@ void Context::setContextDump()
 	auto & allocator = jsonDoc.GetAllocator();
 	rapidjson::Value jsonObjects(rapidjson::kArrayType);
 
-	for (auto & object : m_currentContext)
+	for (auto & object : m_primaryContext)
 	{
 		rapidjson::Value jsonObject(rapidjson::kObjectType);
 
@@ -99,6 +115,22 @@ void Context::getContextDump(std::string & message)
 	std::lock_guard <std::mutex> locker(m_locker);
 	message = m_dump;
 }
+
+void Context::cloneAgents()
+{
+	for (auto & object : m_secondaryContext)
+		remove(object);
+	m_secondaryContext.clear();
+
+	for (auto & object : m_primaryContext)
+		clone(object);
+}
+
+const std::vector <std::shared_ptr <BaseEntity>> & Context::getSecondaryContext() const
+{
+	return m_secondaryContext;
+}
+
 
 /*
 bool Context::isCellBusy(std::tuple <int, int> position)

@@ -33,6 +33,9 @@ struct BaseEntity : public std::enable_shared_from_this <BaseEntity>
 	virtual const std::tuple <int, int> & getPosition() = 0;
 	virtual const double & getDirection() = 0;
 
+	virtual const void setPosition(std::tuple <int, int> position) = 0;
+	virtual const void setDirection(double direction) = 0;
+
 	int										m_id = 0;
 	std::shared_ptr <BaseEntity>			m_parent = nullptr;
 
@@ -58,6 +61,9 @@ public:
 
 	virtual const std::tuple <int, int> & getPosition() final { return m_position; }
 	virtual const double & getDirection() final { return m_direction; }
+
+	virtual const void setPosition(std::tuple <int, int> position) final { m_position = position; }
+	virtual const void setDirection(double direction) final { m_direction = direction; }
 
 	virtual bool isOnCell(std::tuple <int, int> position) final;
 

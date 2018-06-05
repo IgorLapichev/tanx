@@ -33,8 +33,10 @@ public:
 		return theSingleInstance;
 	}
 
-	const std::vector <std::shared_ptr <BaseEntity>> getAll() const { return m_currentContext; }
+	const std::vector <std::shared_ptr <BaseEntity>> getAll() const { return m_primaryContext; }
 	const std::shared_ptr <BaseEntity> getById(const int & id);
+
+	void clone(const std::shared_ptr <BaseEntity> & original);
 
 	const std::shared_ptr <BaseEntity> add(size_t typeId, const std::shared_ptr <BaseEntity> &  pParent = nullptr);
 	template <typename T> auto add(const std::shared_ptr <BaseEntity> &  pParent = nullptr)
@@ -58,6 +60,9 @@ public:
 	void setContextDump();
 	void getContextDump(std::string & message);
 
+	void cloneAgents();
+	const std::vector <std::shared_ptr <BaseEntity>> & getSecondaryContext() const;
+
 	void swap();
 
 	//////////// move to ContextManager
@@ -71,7 +76,8 @@ private:
 
 	std::string									m_dump;
 	ObjectPool									m_pool;
-	std::vector <std::shared_ptr <BaseEntity>>	m_context[2];
-	std::vector <std::shared_ptr <BaseEntity>>	m_currentContext = m_context[0];
-
+	//std::vector <std::shared_ptr <BaseEntity>>	m_context[2];
+	//std::vector <std::shared_ptr <BaseEntity>>	m_currentContext = m_context[0];
+	std::vector <std::shared_ptr <BaseEntity>>	m_primaryContext;
+	std::vector <std::shared_ptr <BaseEntity>>	m_secondaryContext;
 };
