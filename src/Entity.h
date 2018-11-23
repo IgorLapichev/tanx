@@ -29,6 +29,7 @@ struct BaseEntity : public std::enable_shared_from_this <BaseEntity>
 	const std::string & getEntityName() const { return m_entityName; }
 
 	void setParent(const std::shared_ptr <BaseEntity> &  pParent) { m_parent = pParent; }
+	const std::shared_ptr <BaseEntity> getParent() { return m_parent; }
 
 	virtual const std::tuple <int, int> & getPosition() = 0;
 	virtual const double & getDirection() = 0;

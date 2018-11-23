@@ -10,6 +10,8 @@ set(TARGET_SRC
 	src/ThreadPool.cpp
 	src/stdafx.cpp
 	src/tanx.cpp
+	src/UnitEntity.cpp
+	src/Trajectory.cpp
    )
 
 set(TARGET_H 
@@ -24,6 +26,8 @@ set(TARGET_H
 	src/ThreadPool.h
 	src/stdafx.h
 	src/defs.h
+	src/UnitEntity.h
+	src/Trajectory.h
    )
 
 set(PROJECT_FILES

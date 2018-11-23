@@ -10,6 +10,7 @@
 #include"stdafx.h"
 
 #include "ObjectPool.h"
+#include "UnitEntity.h"
 
 ObjectPool::ObjectPool()
 {
@@ -28,6 +29,14 @@ ObjectPool::ObjectPool()
 
 	for (int i = 0; i < MAX_BULLET_ENTITIES; ++i)
 		initEntity <BulletEntity>();
+
+
+
+	for (int i = 0; i < MAX_UNION_ENTITIES; ++i)
+		initEntity <UnionEntity>();
+
+	for (int i = 0; i < MAX_UNIT_ENTITIES; ++i)
+		initEntity <UnitEntity>();
 }
 
 ObjectPool::~ObjectPool()

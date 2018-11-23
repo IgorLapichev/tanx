@@ -76,8 +76,6 @@ private:
 
 	std::string									m_dump;
 	ObjectPool									m_pool;
-	//std::vector <std::shared_ptr <BaseEntity>>	m_context[2];
-	//std::vector <std::shared_ptr <BaseEntity>>	m_currentContext = m_context[0];
 	std::vector <std::shared_ptr <BaseEntity>>	m_primaryContext;
 	std::vector <std::shared_ptr <BaseEntity>>	m_secondaryContext;
 };
